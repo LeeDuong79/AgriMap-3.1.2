@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { 
-  Sprout, NotebookPen, CloudSun, BookOpen, 
+  Sprout, FileSignature, CloudSun, BookOpen, 
   ShieldCheck, Search, ChevronRight, TrendingDown, 
   TrendingUp, LayoutGrid, Calendar, Info, Thermometer, Bell, Sparkles
 } from 'lucide-react';
@@ -96,7 +96,7 @@ const FarmerHome: React.FC<FarmerHomeProps> = ({ onNavigate, onOpenWeather, farm
             { label: 'Bản đồ', icon: <Thermometer size={20} />, color: 'bg-orange-500 text-white', tab: 'heatmap' },
             { label: 'Hồ sơ', icon: <LayoutGrid size={20} />, color: 'bg-slate-900 text-white', tab: 'list' },
             { label: 'Thời tiết', icon: <CloudSun size={20} />, color: 'bg-amber-400 text-white', action: onOpenWeather },
-            { label: 'Kiến thức', icon: <NotebookPen size={20} />, color: 'bg-purple-500 text-white', tab: 'knowledge' },
+            { label: 'Hợp đồng', icon: <FileSignature size={20} />, color: 'bg-purple-500 text-white', tab: 'contracts' },
           ].map((item, i) => (
             <motion.button 
               key={i} 

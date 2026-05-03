@@ -11,11 +11,10 @@ import CustomerDashboard from './components/CustomerDashboard';
 import AuthScreen from './components/AuthScreen';
 import FarmerProfile from './components/FarmerProfile';
 import FarmerHome from './components/FarmerHome';
-import KnowledgeHandbook from './components/KnowledgeHandbook';
 import WeatherModal from './components/WeatherModal';
 import AgricultureHeatmap from './components/AgricultureHeatmap';
 import NegotiationChat from './components/NegotiationChat';
-import { Home, Map as MapIcon, User as UserIcon, LayoutGrid, NotebookPen, Thermometer, MessageSquare } from 'lucide-react';
+import { Home, Map as MapIcon, User as UserIcon, LayoutGrid, FileSignature, Thermometer, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChatMessage, NegotiationSession } from './types';
 
@@ -146,8 +145,8 @@ const App: React.FC = () => {
     }
   ]);
   
-  // Tabs: home, register, list, map, profile, knowledge, heatmap
-  const [farmerTab, setFarmerTab] = useState<'home' | 'register' | 'list' | 'map' | 'profile' | 'knowledge' | 'heatmap'>('home');
+  // Tabs: home, register, list, map, profile, contracts, heatmap
+  const [farmerTab, setFarmerTab] = useState<'home' | 'register' | 'list' | 'map' | 'profile' | 'contracts' | 'heatmap'>('home');
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
@@ -518,8 +517,32 @@ const App: React.FC = () => {
                   onUpdateUser={handleUpdateUser}
                 />
               )}
-              {farmerTab === 'knowledge' && (
-                <KnowledgeHandbook onBack={() => setFarmerTab('home')} />
+              {farmerTab === 'contracts' && (
+                <FarmerDashboard 
+                  key="contracts"
+                  user={user as FarmerUser}
+                  products={products.filter(p => p.farmerId === user.id || p.farmerId === 'f_current')} 
+                  onViewPortal={() => setFarmerTab('register')} 
+                  onNavigate={(tab) => setFarmerTab(tab)}
+                  initialView="e-contract-agreement"
+                  orders={orders}
+                  setOrders={setOrders}
+                  onLogout={handleLogout}
+                  onReportViolation={handleReportViolation}
+                  onStartNegotiation={handleStartNegotiation}
+                  negotiationSessions={negotiationSessions}
+                  activeSessionId={activeSessionId}
+                  setActiveSessionId={setActiveSessionId}
+                  onSendMessage={handleSendMessage}
+                  onDeleteNegotiation={handleDeleteNegotiation}
+                  proposedOrderId={proposedOrderId}
+                  onClearProposedOrder={() => setProposedOrderId(null)}
+                  onProposeContract={() => {
+                    if (activeSessionId) {
+                      handleProposeContract(activeSessionId);
+                    }
+                  }}
+                />
               )}
               {farmerTab === 'heatmap' && (
                 <AgricultureHeatmap onBack={() => setFarmerTab('home')} />
@@ -551,10 +574,10 @@ const App: React.FC = () => {
                   />
                 </div>
                 <BottomNavItem 
-                  active={farmerTab === 'knowledge'} 
-                  onClick={() => setFarmerTab('knowledge')} 
-                  icon={<NotebookPen size={22} />} 
-                  label="Sổ tay" 
+                  active={farmerTab === 'contracts'} 
+                  onClick={() => setFarmerTab('contracts')} 
+                  icon={<FileSignature size={22} />} 
+                  label="Thỏa thuận" 
                 />
                 <BottomNavItem 
                   active={farmerTab === 'profile'} 

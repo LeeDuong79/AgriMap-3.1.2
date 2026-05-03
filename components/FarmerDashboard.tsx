@@ -250,7 +250,7 @@ const FarmerDashboard: React.FC<FarmerDashboardProps> = ({
     { id: 'warehouse', label: 'Kho hàng', icon: <Package />, color: 'bg-[#15803D]' },
     { id: 'weather', label: 'Dự báo thời tiết', icon: <CloudSun />, color: 'bg-amber-400', onClick: () => setIsWeatherOpen(true) },
     { id: 'e-contract-agreement', label: 'Thỏa thuận ký kết HĐĐT', icon: <PenTool />, color: 'bg-indigo-600', onClick: () => setActiveView('e-contract-agreement'), badge: orders.filter(o => (o.status === 'Đang xử lý' || o.status === 'Đang thương lượng' || o.status === 'Chờ ký kết') && (user.id === 'F-DEMO' || o.items.some(i => i.farmerId === user.id || i.farmerId === 'f_current'))).length > 0 ? String(orders.filter(o => (o.status === 'Đang xử lý' || o.status === 'Đang thương lượng' || o.status === 'Chờ ký kết') && (user.id === 'F-DEMO' || o.items.some(i => i.farmerId === user.id || i.farmerId === 'f_current'))).length) : undefined },
-    { id: 'learning', label: 'Sổ tay kiến thức', icon: <NotebookPen />, color: 'bg-[#0D9488]', onClick: () => onNavigate?.('knowledge') },
+    { id: 'learning', label: 'Tra cứu HĐĐT', icon: <FileSignature />, color: 'bg-[#0D9488]', onClick: () => onNavigate?.('contracts') },
   ];
 
   // Logic for the old view (Records Tracking)
