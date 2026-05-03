@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriMap VN - Cổng Thông tin Nông sản Quốc gia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Mobile-app look overrides */
+        .leaflet-container {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        /* Smooth scrolling */
+        * {
+            scroll-behavior: smooth;
+        }
+        /* Hide scrollbars but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* MONITORING STATION STYLES */
+        .marker-container { position: relative; width: 60px; height: 60px; display: flex; justify-content: center; align-items: center; }
+        .warning-rect { position: absolute; width: 38px; height: 38px; border-radius: 10px; border: 2px solid currentColor; background: rgba(255, 255, 255, 0.05); animation: rect-pulse 1.5s ease-in-out infinite alternate; box-shadow: 0 0 10px currentColor; z-index: 1; }
+        @keyframes rect-pulse { from { transform: scale(1); opacity: 0.6; } to { transform: scale(1.1); opacity: 1; } }
+        
+        .ripple { position: absolute; width: 100%; height: 100%; border-radius: 50%; opacity: 0; pointer-events: none; border: 2px solid currentColor; animation: ripple-out 2s cubic-bezier(0, 0.2, 0.8, 1) infinite; }
+        .ripple-2 { animation-delay: 1s; }
+        @keyframes ripple-out { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(2.5); opacity: 0; } }
+
+        .type-hot { color: #ef4444; }
+        .type-water { color: #fbbf24; }
+        .type-rain { color: #60a5fa; }
+
+        .sun-icon { width: 20px; height: 20px; background: #fbbf24; border-radius: 50%; box-shadow: 0 0 15px #fbbf24; z-index: 5; }
+        
+        .rain-storm-container { width: 45px; height: 45px; display: flex; flex-direction: column; align-items: center; position: relative; z-index: 5; }
+        .cloud-storm { width: 40px; height: 26px; fill: #60a5fa; filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.5)); }
+        .rain-drops-heavy { position: absolute; top: 20px; width: 35px; height: 25px; overflow: hidden; }
+        .drop-heavy { position: absolute; background: #60a5fa; width: 2.5px; height: 10px; border-radius: 2px; animation: rain-fall-heavy 0.4s linear infinite; box-shadow: 0 0 5px #60a5fa; }
+        @keyframes rain-fall-heavy { 0% { transform: translateY(-15px); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(25px); opacity: 0; } }
+
+        .sun-cloud-container { position: relative; width: 32px; height: 32px; z-index: 5; }
+        .sun-mini { position: absolute; top: 2px; right: 2px; width: 14px; height: 14px; background: #fcd34d; border-radius: 50%; box-shadow: 0 0 8px #f59e0b; }
+        .cloud-mini { position: absolute; bottom: 4px; left: 2px; width: 24px; height: 14px; fill: #f1f5f9; }
+
+        .water-warning-bang { width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 18px solid #fbbf24; position: relative; z-index: 5; }
+        .water-warning-bang::after { content: '!'; position: absolute; top: 2px; left: -2px; color: #000; font-size: 12px; font-weight: 900; }
+        
+        .loc-label { 
+            background: rgba(15, 23, 42, 0.95); border: 1px solid #3b82f6; color: white; 
+            padding: 6px 12px; border-radius: 8px; font-weight: 800; font-size: 11px; 
+            text-transform: uppercase; white-space: nowrap; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            animation: label-pop 0.3s ease-out;
+            pointer-events: none;
+        }
+        @keyframes label-pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* SENSOR STATION POPUP STYLES */
+        .sensor-popup .leaflet-popup-content-wrapper {
+            background: #0f172a !important;
+            color: #f8fafc !important;
+            border: 2px solid #3b82f6 !important;
+            border-radius: 20px !important;
+            padding: 0 !important;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+        }
+        .sensor-popup .leaflet-popup-content {
+            margin: 0 !important;
+            width: 280px !important;
+        }
+        .sensor-popup .leaflet-popup-tip {
+            background: #3b82f6 !important;
+        }
+        .sensor-popup .leaflet-popup-close-button {
+            color: #94a3b8 !important;
+            padding: 8px !important;
+        }
+        .sensor-marker-icon {
+            background: #3b82f6;
+            border: 3px solid #0f172a;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+            transition: all 0.3s ease;
+        }
+        .sensor-marker-icon:hover {
+            transform: scale(1.2) rotate(10deg);
+            background: #2563eb;
+            box-shadow: 0 0 25px rgba(59, 130, 246, 1);
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "recharts": "https://esm.sh/recharts@^3.7.0",
+    "leaflet": "https://esm.sh/leaflet@^1.9.4"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-white overflow-hidden">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
